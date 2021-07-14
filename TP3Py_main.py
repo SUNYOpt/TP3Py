@@ -47,6 +47,7 @@ from TP3py_Gstream import TP3py_Gstream
 global ModuleDir
 ModuleDir = "Modules/"
 
+# Im looking into importing modules here
 class ModuleHandler():
 
    def __init__(self):
@@ -106,10 +107,11 @@ class TobiiRecUI(QMainWindow):
         #self.ElapsedTimedisplay.setText("hmm")
 
 
-        
+        # Here we define the Gstreamer thread 
         self.thread = QThread()
         self.GstreamWorker = TP3py_Gstream()
 
+        # Module Handler Thread loads the modules
         self.ModuleHandler = ModuleHandler()
 
         self.stop_signal.connect(self.GstreamWorker.stop)  # connect stop signal to worker stop method
@@ -130,7 +132,7 @@ class TobiiRecUI(QMainWindow):
         # Stop Button action:
         self.endbutton.clicked.connect(self.stop_thread)        
 
-
+        # List of modules to be selected in the pipline 
         self.listwidget = QListWidget()
         self.listwidget.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
 
