@@ -41,8 +41,11 @@ from PyQt5.QtWidgets import QMainWindow, QListWidget
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
 from functools import partial
 from datetime import datetime
-from TobiiExtract import TobiiExtract
+#from TobiiExtract import TobiiExtract
 from TP3py_Gstream import TP3py_Gstream
+
+from pathlib import Path
+
 
 global ModuleDir
 ModuleDir = "Modules/"
@@ -51,23 +54,29 @@ ModuleDir = "Modules/"
 class ModuleHandler():
 
    def __init__(self):
-        super().__init__()     
-        module_classes = []
-  
+        super().__init__()    
+        
+        # Array containing all classes of modules
+        self.ModArray = []
+
    def ModuleInit(self, Mod_names):
-        global ModuleDir
+        global ModuleDir 
         moduleList = glob.glob(ModuleDir+"*.py") 
+        path = Path(__file__).parent.absolute()
 
-        sys.path.append(ModuleDir)
+        # First priority would be the module directory
+        sys.path.insert(0,os.path.join(path, ModuleDir))
 
-        print(moduleList)
+        # Importing all selected modules
         for currName in moduleList:
+            print (currName[len(ModuleDir):-3])
+            module  = __import__(currName[len(ModuleDir):-3])
 
-            module  = __import__(currName[len(ModuleDir):])
+            cls = getattr(module, currName[len(ModuleDir):-3])
+            
+            #Initializing mods
+            self.ModArray.append(cls())
 
-            cls = getattr(module, currName[len(ModuleDir):])
-
-            print (currName)
 
 
    # Starting the modules
