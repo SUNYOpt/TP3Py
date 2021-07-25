@@ -11,6 +11,8 @@ import sys
 import os
 import cv2
 import numpy
+import datetime
+
 
 from gi.repository import Gst, GstApp, GLib
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
@@ -66,7 +68,7 @@ class TP3py_Gstream(QObject):
 
     def do_work(self):
         global namestring
-        print(datetime.date(datetime.now()))
+        print(datetime.date(datetime.datetime.now()))
 
         #Inputting the saving path and the file name
 

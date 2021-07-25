@@ -12,6 +12,7 @@ import numpy
 
 import glob
 import importlib
+import importlib.util
 
 import matplotlib
 matplotlib.use('Qt5Agg')
@@ -37,6 +38,7 @@ from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow, QListWidget
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
 from functools import partial
@@ -47,17 +49,38 @@ from TP3py_Gstream import TP3py_Gstream
 from pathlib import Path
 
 
-global ModuleDir
-ModuleDir = "Modules/"
+# root = "./"
+# ModuleDir = './Modules/'
+
 
 # Im looking into importing modules here
 class ModuleHandler():
-
    def __init__(self):
         super().__init__()    
         
         # Array containing all classes of modules
         self.ModArray = []
+        self.OpenMods = []
+
+   #TODO check if module exists & check if module is compatible
+   def check_module(self, f):
+       return True
+   
+    
+   def add_modules(self, files):
+       oks = []
+       count = 0
+       for f in files:
+           if self.check_module(f):
+               self.ModArray.append(os.path.normpath(f))
+               oks.append(count)
+               count += 1
+       return oks       
+               
+   def rem_modules(self, files):
+       for f in files:
+           self.ModArray.remove(f)
+
 
    def ModuleInit(self, Mod_names):
         global ModuleDir 
@@ -73,17 +96,41 @@ class ModuleHandler():
             module  = __import__(currName[len(ModuleDir):-3])
 
             cls = getattr(module, currName[len(ModuleDir):-3])
+            print(currName[len(ModuleDir):-3])
             
             #Initializing mods
-            self.ModArray.append(cls())
+            self.OpenMods.append(cls())
 
 
+   # __import__('D:\\GitHub\\TP3Py\\Modules\\RandomPlot')
+   #TODO
+   def start_all(self):
+       self.close_all()
+       for m in self.ModArray:
+            sys.path.append(os.path.join(*os.path.split(m)[:-1]))
+            # spec = importlib.util.spec_from_file_location(m, __file__)
+            # module = importlib.util.module_from_spec(spec)
+            module  = __import__(os.path.split(m)[-1][:-3])
+            cls = getattr(module, os.path.split(m[:-3])[-1])
+            self.OpenMods.append(cls())
+            
+            
+   def rem_modules_by_index(self, i):
+       del self.ModArray[i]
 
+   def close_all(self):
+       for m in self.OpenMods:
+           m.close()
+       del self.OpenMods[:]
+       
    # Starting the modules
    #def ModuleStart(self):
    # Ending the module's functions
    def ModuleEnd(self):
         print('end')
+
+
+
 
 # Create a subclass of QMainWindow 
 class TobiiRecUI(QMainWindow):
@@ -102,8 +149,15 @@ class TobiiRecUI(QMainWindow):
         self.setCentralWidget(self._centralWidget)
         self._centralWidget.setLayout(self.generalLayout)
         
-        self.startbutton = QPushButton('start experiment')
-        self.endbutton = QPushButton('end experiment')
+        self.startbutton  = QPushButton('Start Experiment')
+        self.endbutton    = QPushButton('End Experiment')
+        self.addmodule    = QPushButton('Add Module(s)')
+        self.removemodule = QPushButton('Remove Module(s)')
+        self.openmodules  = QPushButton('Open')
+
+
+        self.listwidget = QListWidget()
+        
 
         self.generalLayout.addWidget(QLabel('<h2>Experiment Name:</h2>'), 0, 0)
         self.generalLayout.addWidget(QLineEdit(), 0, 1)
@@ -113,8 +167,12 @@ class TobiiRecUI(QMainWindow):
         self.generalLayout.addWidget(QLabel('Elapsed time:'), 2, 0)
         self.ElapsedTimedisplay = QLineEdit()
         self.generalLayout.addWidget(self.ElapsedTimedisplay, 2, 1)
+        self.generalLayout.addWidget(self.addmodule   , 3, 2)
+        self.generalLayout.addWidget(self.removemodule, 3, 3)
+        self.generalLayout.addWidget(self.openmodules , 3, 4)
         #self.ElapsedTimedisplay.setText("hmm")
 
+        self.generalLayout.addWidget(self.listwidget, 2, 2, 1, 3)
 
         # Here we define the Gstreamer thread 
         self.thread = QThread()
@@ -138,34 +196,64 @@ class TobiiRecUI(QMainWindow):
         # Start Button action:
         self.startbutton.clicked.connect(self.thread.start)
 
+        # AddModule Button action:
+        self.addmodule.clicked.connect(self.addmodulefun)
+        
+        # RemoveModule Button action:
+        self.removemodule.clicked.connect(self.remmodulefun)
+        
+        # openModule Button action:
+        self.openmodules.clicked.connect(self.openmodulefun)
+        
+        
         # Stop Button action:
         self.endbutton.clicked.connect(self.stop_thread)        
 
         # List of modules to be selected in the pipline 
-        self.listwidget = QListWidget()
         self.listwidget.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-
-        self.generalLayout.addWidget(self.listwidget, 2, 2)
-
-        moduleList = glob.glob(ModuleDir+"*.py") 
-
-
-        # add some items
-        for i in moduleList:
-            it = QtWidgets.QListWidgetItem(i)
-            self.listwidget.addItem(it)
-            it.setSelected(True)
-
         self.listwidget.itemClicked.connect(self.printItemText)
-        # selected items
-        for item in self.listwidget.selectedItems():
-            print(item.text())
+        # # selected items
+        # for item in self.listwidget.selectedItems():
+        #     print(item.text())
 
         
-    # When stop_btn is clicked this runs. Terminates the worker and the thread.
+   # When stop_btn is clicked this runs. Terminates the worker and the thread.
    def stop_thread(self):
         self.stop_signal.emit()  # emit the finished signal on stop
 
+
+   # When browse_btn is clicked this runs. 
+   def addmodulefun(self):
+        self.openFileNamesDialog()
+        
+   # When browse_btn is clicked this runs. 
+   def remmodulefun(self):
+        modules_indices = []
+        for i in self.listwidget.selectedIndexes():
+            modules_indices.append(i.row())
+            ind = self.listwidget.takeItem(i.row())
+        for i in modules_indices[::-1]:
+            self.ModuleHandler.rem_modules_by_index(i) 
+        
+        
+   def openmodulefun(self):
+        self.ModuleHandler.start_all()
+        
+        
+   def openFileNamesDialog(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        files, _ = QFileDialog.getOpenFileNames(self,"Select Modules to Add", "","All Files (*);;Python Files (*.py)", options=options)
+        if files:
+            oks = self.ModuleHandler.add_modules(files)
+            
+            for i in range(len(oks)):
+                # add some items
+                it = QtWidgets.QListWidgetItem(os.path.split(files[oks[i]])[-1][:-3])
+                self.listwidget.addItem(it)
+                # it.setSelected(True)
+            
+        
    def nameEcho (self):
         print("here setting name: "+ self.ElapsedTimedisplay.text())
         global namestring
@@ -178,7 +266,7 @@ class TobiiRecUI(QMainWindow):
             x.append(str(self.listwidget.selectedItems()[i].text()))
 
         #print (x)
-        self.ModuleHandler.ModuleInit(x)
+        # self.ModuleHandler.ModuleInit(x)
 
 def main():
     """Main function."""
