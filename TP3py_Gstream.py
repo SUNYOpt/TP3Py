@@ -21,17 +21,21 @@ Gst.init(None)
 
 
 class TP3py_Gstream(QObject):
-
-    finished = pyqtSignal()  # give worker class a finished signal
-    change_pixmap_signal = pyqtSignal(numpy.ndarray)
+    
+    """Set of signals for outputting the data being streamed to other threads"""   
+    # give worker class a finished signal
+    Gstreamfinished = pyqtSignal() 
+    EyeVideo_signal = pyqtSignal(numpy.ndarray)
+    SceneVideo_signal = pyqtSignal(numpy.ndarray)
 
     def __init__(self, parent=None):
         QObject.__init__(self, parent=parent)
         self.continue_run = True  # provide a bool run condition for the class
         
-        self.pipeline = Gst.parse_launch('videotestsrc  is-live=true ! videoconvert ! queue ! x264enc ! tee name=tscene \
-        tscene. ! queue ! appsink name=Appscenesink \
-        tscene. ! queue ! appsink name=Appeyesink  ')
+        self.pipeline = Gst.parse_launch('videotestsrc  is-live=true !  video/x-raw,format= I420,framerate=50/1 ,width=1024,height=256 ! \
+        videoconvert ! appsink name= Appeyesink  \
+        videotestsrc  is-live=true !  video/x-raw,format= I420,framerate=50/1 ,width=1024,height=256 ! \
+        videoconvert ! appsink name= Appscenesink  ')
 
         self.appEyeMsinkGUI = self.pipeline.get_by_name("Appeyesink")
         self.appScenesink = self.pipeline.get_by_name("Appscenesink")
@@ -45,7 +49,10 @@ class TP3py_Gstream(QObject):
         recievedTime = (buf.pts)/1e9 
         caps = sample.get_caps()
         
-        #print(caps.get_structure(0).get_value('format'))
+        print(caps.get_structure(0).get_value('format'))
+        print(caps.get_structure(0).get_value('height'))
+        print(caps.get_structure(0).get_value('width'))
+        print(buf.get_size())
 
 
         arr = numpy.ndarray(
@@ -55,7 +62,7 @@ class TP3py_Gstream(QObject):
             buffer=buf.extract_dup(0, buf.get_size()),
             dtype=numpy.uint8)
 
-        self.change_pixmap_signal.emit(arr)
+        self.EyeVideo_signal.emit(arr)
         return arr, recievedTime
 
 
@@ -68,7 +75,7 @@ class TP3py_Gstream(QObject):
 
     def do_work(self):
         global namestring
-        print(datetime.date(datetime.datetime.now()))
+        #print(datetime.date(datetime.datetime.now()))
 
         #Inputting the saving path and the file name
 
@@ -108,7 +115,7 @@ class TP3py_Gstream(QObject):
                     else:
                         print("Unexpected message received.")
             
-        self.finished.emit()  # emit the finished signal when the loop is done
+        self.Gstreamfinished.emit()  # emit the finished signal when the loop is done
 
     def stop(self):
         self.continue_run = False  # set the run condition to false on stop

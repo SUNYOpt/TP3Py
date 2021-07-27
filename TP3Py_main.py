@@ -104,7 +104,7 @@ class ModuleHandler():
 
    # __import__('D:\\GitHub\\TP3Py\\Modules\\RandomPlot')
    #TODO
-   def start_all(self):
+   def start_all(self, gstreamWorker):
        self.close_all()
        for m in self.ModArray:
             sys.path.append(os.path.join(*os.path.split(m)[:-1]))
@@ -112,7 +112,7 @@ class ModuleHandler():
             # module = importlib.util.module_from_spec(spec)
             module  = __import__(os.path.split(m)[-1][:-3])
             cls = getattr(module, os.path.split(m[:-3])[-1])
-            self.OpenMods.append(cls())
+            self.OpenMods.append(cls(gstreamWorker))
             
             
    def rem_modules_by_index(self, i):
@@ -169,24 +169,28 @@ class TobiiRecUI(QMainWindow):
         self.generalLayout.addWidget(self.ElapsedTimedisplay, 2, 1)
         self.generalLayout.addWidget(self.addmodule   , 3, 2)
         self.generalLayout.addWidget(self.removemodule, 3, 3)
-        self.generalLayout.addWidget(self.openmodules , 3, 4)
         #self.ElapsedTimedisplay.setText("hmm")
 
-        self.generalLayout.addWidget(self.listwidget, 2, 2, 1, 3)
+        self.generalLayout.addWidget(self.listwidget, 2, 2, 1, 2)
 
         # Here we define the Gstreamer thread 
         self.thread = QThread()
         self.GstreamWorker = TP3py_Gstream()
 
         # Module Handler Thread loads the modules
+        # To do: not a thread currently
         self.ModuleHandler = ModuleHandler()
 
-        self.stop_signal.connect(self.GstreamWorker.stop)  # connect stop signal to worker stop method
+        # connect stop signal to worker stop method
+        self.stop_signal.connect(self.GstreamWorker.stop)  
         self.GstreamWorker.moveToThread(self.thread)
-
-        self.GstreamWorker.finished.connect(self.thread.quit)  # connect the workers finished signal to stop thread
-        self.GstreamWorker.finished.connect(self.GstreamWorker.deleteLater)  # connect the workers finished signal to clean up worker
-        self.thread.finished.connect(self.thread.deleteLater)  # connect threads finished signal to clean up thread
+        
+        # connect the workers finished signal to stop gstreamer thread
+        self.GstreamWorker.Gstreamfinished.connect(self.thread.quit) 
+        # connect the workers finished signal to clean up worker
+        self.GstreamWorker.Gstreamfinished.connect(self.GstreamWorker.deleteLater)  
+        # connect threads finished signal to clean up thread
+        self.thread.finished.connect(self.thread.deleteLater) 
         
         self.ElapsedTimedisplay.textChanged.connect(self.nameEcho)
         
@@ -203,7 +207,7 @@ class TobiiRecUI(QMainWindow):
         self.removemodule.clicked.connect(self.remmodulefun)
         
         # openModule Button action:
-        self.openmodules.clicked.connect(self.openmodulefun)
+        self.startbutton.clicked.connect(self.openmodulefun)
         
         
         # Stop Button action:
@@ -237,7 +241,7 @@ class TobiiRecUI(QMainWindow):
         
         
    def openmodulefun(self):
-        self.ModuleHandler.start_all()
+        self.ModuleHandler.start_all(self.GstreamWorker)
         
         
    def openFileNamesDialog(self):

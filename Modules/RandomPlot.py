@@ -10,6 +10,7 @@ from matplotlib.figure import Figure
 
 import random
 
+from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
 
 global ModuleDir
 ModuleDir = "Modules/"
@@ -51,10 +52,10 @@ class WindowArrangment(QMainWindow):
 ######################################################
 #The Class definition that we load in the main thread#
 ######################################################
-class RandomPlot():
+class RandomPlot(QObject):
 
    # Visual Arrangment of the GUI 
-   def __init__(self):
+   def __init__(self, GstreamWorker):
 
        super().__init__()
 
