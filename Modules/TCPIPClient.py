@@ -23,6 +23,43 @@ ModuleDir = "Modules/"
 print('yo')
 
 
+#########################
+"""TCP IP Worker Class"""
+#########################
+class TCPWorkerClass(QObject):
+   TCPfinished = pyqtSignal()  # give worker class a finished signal
+   MessRecieved = pyqtSignal(str)
+
+   def __init__(self, HOST, PORT):
+
+       super().__init__()
+       self.continue_run = True 
+
+       self.HOST= HOST
+       self.PORT = PORT
+       self.TcpSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+
+   def CommunWork(self):
+
+       self.TcpSocket.connect((self.HOST, self.PORT))
+
+       while  self.continue_run:
+           data = self.TcpSocket.recv(8)
+           self.TcpSocket.sendall(b'Hi')
+
+           if len(data) <= 0:
+               break
+           #self.window.MessageLine.setText(repr(data))
+           self.MessRecieved.emit(repr(data))
+           print('Received', repr(data))
+
+       self.TCPfinished.emit()
+
+   def EndCommun(self):
+       self.continue_run = False
+       print('Closing connection')       
+       self.TcpSocket.close()
 
 ########################################################################
 #Visual arrangment and the things we'd like to have on the module's GUI#
@@ -65,35 +102,34 @@ class TCPIPClient(QObject):
        self.window = WindowArrangment()
        self.window.show()
        
-
-
-
-       self.Tcpthread = QThread()
-       self.Tcpthread.started.connect(self.TCPWorker)
-       self.window.startbutton.clicked.connect(self.Tcpthread.start)
-
-    ############### BUG BUGG lol:))
-   def TCPWorker(self):
-
-         
+                
        HOST = '10.120.12.242'  # The server's hostname or IP address
        PORT = 55000            # The port used by the server
 
-       self.TcpSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-       self.TcpSocket.connect((HOST, PORT))
-       self.TcpSocket.sendall(b'Hello, world babe')
 
-       # not the best way!!!!
-       while True:
-           data = self.TcpSocket.recv(8)
-           if len(data) <= 0:
-               break
-           self.window.MessageLine.setText(repr(data))
-           print('Received', repr(data))
+       self.Tcpthread = QThread()
+       
+       TCPWorker = TCPWorkerClass(HOST,PORT)
 
+       TCPWorker.moveToThread(self.Tcpthread)
 
-       print('Closing connection')       
-       self.TcpSocket.close()
+       # Cleaning up once the communication ends
+       TCPWorker.TCPfinished.connect(self.Tcpthread.quit) 
+       TCPWorker.TCPfinished.connect(TCPWorker.deleteLater)  
+       self.Tcpthread.finished.connect(self.Tcpthread.deleteLater) 
 
 
+       self.Tcpthread.started.connect(TCPWorker.CommunWork)
+       self.Tcpthread.finished.connect(TCPWorker.EndCommun)
+
+       self.window.startbutton.clicked.connect(self.Tcpthread.start)
+
+       TCPWorker.MessRecieved.connect(self.UpdateMessage)
+
+       self.Tcpthread.TCPWorker = TCPWorker
+
+   @pyqtSlot(str)   
+   def UpdateMessage(self, meassage):
+
+       self.window.MessageLine.setText(meassage)
 
