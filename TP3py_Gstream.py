@@ -49,10 +49,10 @@ class TP3py_Gstream(QObject):
         recievedTime = (buf.pts)/1e9 
         caps = sample.get_caps()
         
-        print(caps.get_structure(0).get_value('format'))
-        print(caps.get_structure(0).get_value('height'))
-        print(caps.get_structure(0).get_value('width'))
-        print(buf.get_size())
+        #print(caps.get_structure(0).get_value('format'))
+        #print(caps.get_structure(0).get_value('height'))
+        #print(caps.get_structure(0).get_value('width'))
+        #print(buf.get_size())
 
 
         arr = numpy.ndarray(
