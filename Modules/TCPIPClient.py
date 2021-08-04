@@ -89,14 +89,10 @@ class WindowArrangment(QMainWindow):
 #The Class definition that we load in the main thread#
 ######################################################
 class TCPIPClient(QObject):
-   
-    
-   #self.GstreamWorker = TP3py_Gstream()
-   # Visual Arrangment of the GUI 
+  
    def __init__(self, GstreamWorker):
 
        super().__init__()
-
        print('TCP IP Client is here!!')  
 
        self.window = WindowArrangment()

@@ -100,7 +100,20 @@ class ModuleHandler():
             
             #Initializing mods
             self.OpenMods.append(cls())
+            
+            # Current module's thread
+            cModuleThread = QThread()
+            # Array of all threads
+            self.OpenModsThreads.append(cModuleThread)
+            
+            # Initializing modules
+            module = cls(gstreamWorker)
+            module.moveToThread(self.OpenModsThreads[self.moduleCounter])
 
+            self.OpenModsThreads[self.moduleCounter].start()
+
+            self.moduleCounter += 1
+            
 
    # __import__('D:\\GitHub\\TP3Py\\Modules\\RandomPlot')
    #TODO
@@ -171,7 +184,7 @@ class TobiiRecUI(QMainWindow):
         self.generalLayout.addWidget(self.removemodule, 3, 3)
         #self.ElapsedTimedisplay.setText("hmm")
 
-        self.generalLayout.addWidget(self.listwidget, 2, 2, 1, 2)
+        self.generalLayout.addWidget(self.listwidget, 2, 2, 1, 3)
 
         # Here we define the Gstreamer thread 
         self.thread = QThread()
@@ -262,7 +275,8 @@ class TobiiRecUI(QMainWindow):
         print("here setting name: "+ self.ElapsedTimedisplay.text())
         global namestring
         namestring = self.ElapsedTimedisplay.text()
-    
+        self.GstreamWorker.setExpName(namestring)
+
    def printItemText(self):       
         items = self.listwidget.selectedItems()
         x = []
