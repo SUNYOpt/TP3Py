@@ -70,7 +70,9 @@ class ShowEyes(QObject):
        self.GstreamWorker.EyeVideo_signal.connect(self.update_image)
 
 
-
+   def close(self):
+       # Closing the window
+       self.window.close()
 
 
    @pyqtSlot(numpy.ndarray)   

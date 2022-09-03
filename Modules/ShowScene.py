@@ -70,7 +70,9 @@ class ShowScene(QObject):
        self.GstreamWorker.SceneVideo_signal.connect(self.update_image)
 
 
-
+   def close(self):
+       # Closing the window
+       self.window.close()
 
 
    @pyqtSlot(numpy.ndarray)   

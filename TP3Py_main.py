@@ -39,8 +39,8 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtWidgets import QMainWindow, QListWidget
-from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtWidgets import QMainWindow, QListWidget, QCheckBox
+from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot, Qt
 from functools import partial
 from datetime import datetime
 #from TobiiExtract import TobiiExtract
@@ -48,6 +48,8 @@ from TP3py_Gstream import TP3py_Gstream
 
 from pathlib import Path
 
+from pynput import keyboard
+import websocket
 
 # root = "./"
 # ModuleDir = './Modules/'
@@ -81,7 +83,7 @@ class ModuleHandler():
        for f in files:
            self.ModArray.remove(f)
 
-
+   """
    def ModuleInit(self, Mod_names):
         global ModuleDir 
         moduleList = glob.glob(ModuleDir+"*.py") 
@@ -113,7 +115,7 @@ class ModuleHandler():
             self.OpenModsThreads[self.moduleCounter].start()
 
             self.moduleCounter += 1
-            
+   """
 
    # __import__('D:\\GitHub\\TP3Py\\Modules\\RandomPlot')
    #TODO
@@ -153,6 +155,9 @@ class TobiiRecUI(QMainWindow):
 
    def __init__(self):
         super().__init__()
+
+
+        self.CalibStatus = False
         # Set some main window's properties
         self.setWindowTitle('Tobii 3 Recorder')
         #self.setFixedSize(1200, 600)
@@ -163,6 +168,7 @@ class TobiiRecUI(QMainWindow):
         self._centralWidget.setLayout(self.generalLayout)
         
         self.startbutton  = QPushButton('Start Experiment')
+        self.Calibbutton  = QPushButton('Eye Calibration')
         self.endbutton    = QPushButton('End Experiment')
         self.addmodule    = QPushButton('Add Module(s)')
         self.removemodule = QPushButton('Remove Module(s)')
@@ -170,48 +176,34 @@ class TobiiRecUI(QMainWindow):
 
 
         self.listwidget = QListWidget()
-        
+        self.CalCheckbox = QCheckBox(':Calibrated')
 
-        self.generalLayout.addWidget(QLabel('<h2>Experiment Name:</h2>'), 0, 0)
-        self.generalLayout.addWidget(QLineEdit(), 0, 1)
-        self.generalLayout.addWidget(self.startbutton, 1, 0)
-        self.generalLayout.addWidget(self.endbutton, 1, 1)        
-        
-        self.generalLayout.addWidget(QLabel('Elapsed time:'), 2, 0)
-        self.ElapsedTimedisplay = QLineEdit()
-        self.generalLayout.addWidget(self.ElapsedTimedisplay, 2, 1)
-        self.generalLayout.addWidget(self.addmodule   , 3, 2)
-        self.generalLayout.addWidget(self.removemodule, 3, 3)
-        #self.ElapsedTimedisplay.setText("hmm")
 
-        self.generalLayout.addWidget(self.listwidget, 2, 2, 1, 3)
+        self.generalLayout.addWidget(QLabel('<h2>Initials:</h2>'), 0, 0)
+        self.InitialEntry = QLineEdit()
+        self.generalLayout.addWidget(self.InitialEntry, 0, 1)
+        self.generalLayout.addWidget(self.startbutton, 2, 0)
+        self.generalLayout.addWidget(self.Calibbutton, 3, 0)
+        self.generalLayout.addWidget(self.CalCheckbox, 3, 1)
 
-        # Here we define the Gstreamer thread 
-        self.thread = QThread()
-        self.GstreamWorker = TP3py_Gstream()
+        self.generalLayout.addWidget(self.endbutton, 2, 2)
 
-        # Module Handler Thread loads the modules
-        # To do: not a thread currently
-        self.ModuleHandler = ModuleHandler()
+        self.generalLayout.addWidget(QLabel('<h3>Experiment Name:</h3>'), 1, 0)
+        self.ExpNameEntry = QLineEdit()
+        self.generalLayout.addWidget(self.ExpNameEntry, 1, 1)
+        self.generalLayout.addWidget(self.addmodule   , 3, 3)
+        self.generalLayout.addWidget(self.removemodule, 3, 4)
 
-        # connect stop signal to worker stop method
-        self.stop_signal.connect(self.GstreamWorker.stop)  
-        self.GstreamWorker.moveToThread(self.thread)
+        self.generalLayout.addWidget(self.listwidget, 2, 3, 1, 3)
+
+
+
+        self.InitialEntry.textChanged.connect(self.InitialEcho)
+        self.ExpNameEntry.textChanged.connect(self.ExpNameEcho)
         
-        # connect the workers finished signal to stop gstreamer thread
-        self.GstreamWorker.Gstreamfinished.connect(self.thread.quit) 
-        # connect the workers finished signal to clean up worker
-        self.GstreamWorker.Gstreamfinished.connect(self.GstreamWorker.deleteLater)  
-        # connect threads finished signal to clean up thread
-        self.thread.finished.connect(self.thread.deleteLater) 
-        
-        self.ElapsedTimedisplay.textChanged.connect(self.nameEcho)
-        
-        self.thread.started.connect(self.GstreamWorker.do_work)
-        self.thread.finished.connect(self.GstreamWorker.stop)
 
         # Start Button action:
-        self.startbutton.clicked.connect(self.thread.start)
+        self.startbutton.clicked.connect(self.InitializeGstreamer)
 
         # AddModule Button action:
         self.addmodule.clicked.connect(self.addmodulefun)
@@ -221,10 +213,9 @@ class TobiiRecUI(QMainWindow):
         
         # openModule Button action:
         self.startbutton.clicked.connect(self.openmodulefun)
-        
-        
-        # Stop Button action:
-        self.endbutton.clicked.connect(self.stop_thread)        
+
+        # Initializing Eye Calibration
+        self.Calibbutton.clicked.connect(self.EyeCalibrateOverWebS)
 
         # List of modules to be selected in the pipline 
         self.listwidget.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
@@ -232,16 +223,75 @@ class TobiiRecUI(QMainWindow):
         # # selected items
         # for item in self.listwidget.selectedItems():
         #     print(item.text())
+        #self.setKeyIncoming()
+        #self.pausebutton.setCheckable(True)
+        self.startbutton.clicked.connect(self.setKeyIncoming)
+        self.endbutton.clicked.connect(self.setKeyOFF)
 
-        
+        # A class for handling the modules
+        self.ModuleHandler = ModuleHandler()
+
+   def InitializeGstreamer(self):
+       # Here we define the Gstreamer thread
+       self.thread = QThread()
+       GstreamWorker = TP3py_Gstream()
+
+       # Module Handler Thread loads the modules
+       # To do: not a thread currently
+       #self.ModuleHandler = ModuleHandler()
+
+       # connect stop signal to worker stop method
+       self.stop_signal.connect(GstreamWorker.stop)
+       GstreamWorker.moveToThread(self.thread)
+
+       # connect the workers finished signal to stop gstreamer thread
+       GstreamWorker.Gstreamfinished.connect(self.thread.quit)
+       # connect the workers finished signal to clean up worker
+       GstreamWorker.Gstreamfinished.connect(GstreamWorker.deleteLater)
+       # connect threads finished signal to clean up thread
+       self.thread.finished.connect(self.thread.deleteLater)
+
+       self.thread.started.connect(GstreamWorker.do_work)
+       # self.thread.finished.connect(GstreamWorker.stop)
+
+       # Start Button action:
+       self.thread.start()
+
+       # Stop Button action:
+       self.endbutton.clicked.connect(self.stop_thread)
+
+       self.thread.GstreamWorker = GstreamWorker
+       self.thread.GstreamWorker.setInitName(self.InitialEntry.text())
+       self.thread.GstreamWorker.setExpName(self.ExpNameEntry.text())
+
+   def on_KeyPress(self, key):
+       print(key)
+
+       self.thread.GstreamWorker.EstablishKeyworkEvents(key)
+
+   def setKeyIncoming(self):
+       # Start a keyboard listener for entering events with keys
+       # Keyboard Listener
+       self.listener = keyboard.Listener(on_press=self.on_KeyPress)
+       self.listener.start()
+
+   def setKeyOFF(self):
+       #self.listener = keyboard.Listener(on_press=None)
+       self.listener.stop()
    # When stop_btn is clicked this runs. Terminates the worker and the thread.
    def stop_thread(self):
-        self.stop_signal.emit()  # emit the finished signal on stop
+       self.stop_signal.emit()  # emit the finished signal on stop
 
+       self.CalibStatus = False
+       self.CalCheckbox.setChecked(False)
+       self.CalCheckbox.setStyleSheet("QCheckBox::indicator"
+                                  "{"
+                                  "background-color : red;"
+                                  "}")
 
    # When browse_btn is clicked this runs. 
    def addmodulefun(self):
-        self.openFileNamesDialog()
+       self.openFileNamesDialog()
         
    # When browse_btn is clicked this runs. 
    def remmodulefun(self):
@@ -254,7 +304,7 @@ class TobiiRecUI(QMainWindow):
         
         
    def openmodulefun(self):
-        self.ModuleHandler.start_all(self.GstreamWorker)
+        self.ModuleHandler.start_all(self.thread.GstreamWorker)
         
         
    def openFileNamesDialog(self):
@@ -271,12 +321,42 @@ class TobiiRecUI(QMainWindow):
                 # it.setSelected(True)
             
         
-   def nameEcho (self):
-        print("here setting name: "+ self.ElapsedTimedisplay.text())
-        global namestring
-        namestring = self.ElapsedTimedisplay.text()
-        self.GstreamWorker.setExpName(namestring)
+   def InitialEcho(self):
+        print("Initials: "+ self.InitialEntry.text())
+        namestring = self.InitialEntry.text()
 
+   def ExpNameEcho(self):
+        print("Exp. Name: "+ self.ExpNameEntry.text())
+        namestring = self.ExpNameEntry.text()
+
+   def EyeCalibrateOverWebS (self):
+
+        # Establishing connection with web socket server for doing calibration
+        ws = websocket.create_connection("ws://192.168.75.51/websocket",  subprotocols=["g3api", "base64"])
+        #To recieve the position of the calibration marker: Message = {"path":"calibrate!emit-markers", "id":21, "method":"POST", "body": []}
+        # Calling calibration action
+        Message = {"path":"calibrate!run", "id":23, "method":"POST", "body": []}
+        ws.send(json.dumps(Message))
+        result = ws.recv()
+        print("Received '%s'" % result)
+        jsonMess = json.loads(result)
+        ws.close()
+
+        if jsonMess['body'] == True:
+            self.CalibStatus = True
+            self.CalCheckbox.setChecked(True)
+            self.CalCheckbox.setStyleSheet("QCheckBox::indicator"
+                                   "{"
+                                   "background-color : lightgreen;"
+                                   "}")
+
+        if jsonMess['body'] == False:
+            self.CalibStatus = False
+            self.CalCheckbox.setChecked(False)
+            self.CalCheckbox.setStyleSheet("QCheckBox::indicator"
+                                   "{"
+                                   "background-color : red;"
+                                   "}")
    def printItemText(self):       
         items = self.listwidget.selectedItems()
         x = []
