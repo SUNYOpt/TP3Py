@@ -1,6 +1,11 @@
+# TP3Py Pipeline - Saver threads
+# Modular Streaming Pipeline of Eye/Head Tracking Data Using Tobii Pro Glasses 3
+# Hamed Rahimi Nasrabadi, Jose-Manuel Alonso
+# bioRxiv 2022.09.02.506255; doi: https://doi.org/10.1101/2022.09.02.506255
+
+
 from queue import Queue, Empty
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
-
 import time
 
 class TobiiWriter(QObject):
@@ -22,9 +27,9 @@ class TobiiWriter(QObject):
 
         if  self.dataofinterest  == 1:     # IMU data
             self.GstreamWorker.IMU_signal.connect(self.writequeue)
-        elif self.dataofinterest  == 2: # Gaze data
+        elif self.dataofinterest  == 2:   # Gaze data
             self.GstreamWorker.Gaze_signal.connect(self.writequeue)
-        elif self.dataofinterest  == 3: # Video timestamp data
+        elif self.dataofinterest  == 3:   # Video timestamp data
             self.GstreamWorker.TS_signal.connect(self.writequeue)
             self.GstreamWorker.TTL_signal.connect(self.writequeue)
 
@@ -51,19 +56,11 @@ class TobiiWriter(QObject):
     def internal_writer(self):
         print('Saving thread running',self.startWriters)
         while self.dowork:
-            #print(self.startWriters)
             try:
                 data = self.queue.get(True, 1)
-
-                #print(data)
-
             except Empty:
-                #print('no!')
-
                 continue    
-            
-            #with self.filewriter as file:
-            #    self.filewriter.write(data)
+           
             if self.startWriters == True:
                 self.filewriter.write(data)
                 self.queue.task_done()
@@ -75,20 +72,12 @@ class TobiiWriter(QObject):
 
     def close(self):
         self.queue.join()
-        #self.GazeQueue.join()
-
         self.startWriters = False
         self.dowork = False
-        #time.sleep(2)
         self.filewriter.close()
-        #self.Gazefilewriter.close()
-
-        #self.deleteLater()
 
 
-    #@pyqtSlot(string)
     def writequeue(self, data):
         self.queue.put(data)
-        #print('Come string', data)
 
 

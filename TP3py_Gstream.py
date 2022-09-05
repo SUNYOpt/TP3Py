@@ -1,9 +1,12 @@
-# For now a work around using test video capabilities of Gstreamer
+# TP3Py Pipeline - Gstreamer Class 
+# Modular Streaming Pipeline of Eye/Head Tracking Data Using Tobii Pro Glasses 3
+# Hamed Rahimi Nasrabadi, Jose-Manuel Alonso
+# bioRxiv 2022.09.02.506255; doi: https://doi.org/10.1101/2022.09.02.506255
+
 
 import gi
 gi.require_version("Gst", "1.0")
 gi.require_version("GstApp", "1.0")
-# importing the module
 import json
 from collections import namedtuple
 import matplotlib.animation as animation
@@ -12,16 +15,12 @@ import os
 import cv2
 import numpy
 from datetime  import datetime
-
-
 from gi.repository import GstApp, GLib, GObject, Gst
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
-
 from TobiiWriter import TobiiWriter
 import time
 import requests
 from requests.auth import HTTPBasicAuth
-
 import websocket
 import asyncio 
 Gst.init(None)

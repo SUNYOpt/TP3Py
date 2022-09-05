@@ -1,5 +1,7 @@
-#HRN 07/09/21
-#
+# TP3Py main code
+# Modular Streaming Pipeline of Eye/Head Tracking Data Using Tobii Pro Glasses 3
+# Hamed Rahimi Nasrabadi, Jose-Manuel Alonso
+# bioRxiv 2022.09.02.506255; doi: https://doi.org/10.1101/2022.09.02.506255
 
 # importing the module
 import json
@@ -25,7 +27,6 @@ from queue import Queue
 
 import struct
 import math 
-# 1. Import `QApplication` and all the required widgets
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
 from PyQt5.QtGui import QPixmap
@@ -43,11 +44,8 @@ from PyQt5.QtWidgets import QMainWindow, QListWidget, QCheckBox
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot, Qt
 from functools import partial
 from datetime import datetime
-#from TobiiExtract import TobiiExtract
 from TP3py_Gstream import TP3py_Gstream
-
 from pathlib import Path
-
 from pynput import keyboard
 import websocket
 
@@ -55,7 +53,7 @@ import websocket
 # ModuleDir = './Modules/'
 
 
-# Im looking into importing modules here
+# A Handler for importing modules into the TP3Py's pipeline
 class ModuleHandler():
    def __init__(self):
         super().__init__()    
@@ -64,7 +62,6 @@ class ModuleHandler():
         self.ModArray = []
         self.OpenMods = []
 
-   #TODO check if module exists & check if module is compatible
    def check_module(self, f):
        return True
    
@@ -83,54 +80,17 @@ class ModuleHandler():
        for f in files:
            self.ModArray.remove(f)
 
-   """
-   def ModuleInit(self, Mod_names):
-        global ModuleDir 
-        moduleList = glob.glob(ModuleDir+"*.py") 
-        path = Path(__file__).parent.absolute()
 
-        # First priority would be the module directory
-        sys.path.insert(0,os.path.join(path, ModuleDir))
-
-        # Importing all selected modules
-        for currName in moduleList:
-            print (currName[len(ModuleDir):-3])
-            module  = __import__(currName[len(ModuleDir):-3])
-
-            cls = getattr(module, currName[len(ModuleDir):-3])
-            print(currName[len(ModuleDir):-3])
-            
-            #Initializing mods
-            self.OpenMods.append(cls())
-            
-            # Current module's thread
-            cModuleThread = QThread()
-            # Array of all threads
-            self.OpenModsThreads.append(cModuleThread)
-            
-            # Initializing modules
-            module = cls(gstreamWorker)
-            module.moveToThread(self.OpenModsThreads[self.moduleCounter])
-
-            self.OpenModsThreads[self.moduleCounter].start()
-
-            self.moduleCounter += 1
-   """
-
-   # __import__('D:\\GitHub\\TP3Py\\Modules\\RandomPlot')
-   #TODO
    def start_all(self, gstreamWorker):
        self.close_all()
        for m in self.ModArray:
             sys.path.append(os.path.join(*os.path.split(m)[:-1]))
-            # spec = importlib.util.spec_from_file_location(m, __file__)
-            # module = importlib.util.module_from_spec(spec)
             module  = __import__(os.path.split(m)[-1][:-3])
             cls = getattr(module, os.path.split(m[:-3])[-1])
             self.OpenMods.append(cls(gstreamWorker))
             
             
-   def rem_modules_by_index(self, i):
+   def rem_modules_by_index(self, i)
        del self.ModArray[i]
 
    def close_all(self):
@@ -138,11 +98,6 @@ class ModuleHandler():
            m.close()
        del self.OpenMods[:]
        
-   # Starting the modules
-   #def ModuleStart(self):
-   # Ending the module's functions
-   def ModuleEnd(self):
-        print('end')
 
 
 
@@ -220,11 +175,7 @@ class TobiiRecUI(QMainWindow):
         # List of modules to be selected in the pipline 
         self.listwidget.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
         self.listwidget.itemClicked.connect(self.printItemText)
-        # # selected items
-        # for item in self.listwidget.selectedItems():
-        #     print(item.text())
-        #self.setKeyIncoming()
-        #self.pausebutton.setCheckable(True)
+
         self.startbutton.clicked.connect(self.setKeyIncoming)
         self.endbutton.clicked.connect(self.setKeyOFF)
 
@@ -236,9 +187,6 @@ class TobiiRecUI(QMainWindow):
        self.thread = QThread()
        GstreamWorker = TP3py_Gstream()
 
-       # Module Handler Thread loads the modules
-       # To do: not a thread currently
-       #self.ModuleHandler = ModuleHandler()
 
        # connect stop signal to worker stop method
        self.stop_signal.connect(GstreamWorker.stop)
@@ -278,7 +226,7 @@ class TobiiRecUI(QMainWindow):
    def setKeyOFF(self):
        #self.listener = keyboard.Listener(on_press=None)
        self.listener.stop()
-   # When stop_btn is clicked this runs. Terminates the worker and the thread.
+
    def stop_thread(self):
        self.stop_signal.emit()  # emit the finished signal on stop
 
@@ -363,8 +311,6 @@ class TobiiRecUI(QMainWindow):
         for i in range(len(items)):
             x.append(str(self.listwidget.selectedItems()[i].text()))
 
-        #print (x)
-        # self.ModuleHandler.ModuleInit(x)
 
 def main():
     """Main function."""
