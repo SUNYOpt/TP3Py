@@ -2,9 +2,9 @@
 This repository accompanies the [paper](https://www.biorxiv.org/content/10.1101/2022.09.02.506255v1) on open-source python library for real-time collection and analysis of eye/head Tracking data.   
 
 Write the following in the terminal to start streaming. 
-'''
+```
 python3 TP3Py_main.py
-'''
+```
 
 # Ubuntu Installation
 Installing Gstreamer, Opencv, and pyqt5: 
