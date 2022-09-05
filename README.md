@@ -1,6 +1,10 @@
 # Modular Streaming Pipeline of Eye/Head Tracking Data Using Tobii Pro Glasses 3
 This repository accompanies the [paper](https://www.biorxiv.org/content/10.1101/2022.09.02.506255v1) on open-source python library for real-time collection and analysis of eye/head Tracking data.   
 
+Write the following in the terminal to start streaming. 
+'''
+python3 TP3Py_main.py
+'''
 
 # Ubuntu Installation
 Installing Gstreamer, Opencv, and pyqt5: 
@@ -10,10 +14,7 @@ sudo apt install libgstreamer1.0-0 gstreamer1.0-plugins-{base,good,bad,ugly} gst
 python3 -m pip install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
 ```
 # Windows Installation 
-We will have to build an environemt where gstreamer libraries can be installed properly.
-
-Install Install MySys2
-Open mingw 64bit and write:
+We will have to build an environemt where gstreamer libraries can be installed properly. For this reason install [MySys2](https://www.msys2.org/) application and open the mingw 64bit terminal. 
 ```
 pacman -Syu 
 ```
