@@ -33,6 +33,7 @@ pacman -S mingw-w64-x86_64-gst-rtsp-server
 ## Contact and information 
 Please let us know if there are any issues with the installations. For further information please refer to the paper.
 
+```
 @article {TP3PY,
 	author = {Rahimi Nasrabadi, Hamed and Alonso, Jose-Manuel},
 	title = {Modular Streaming Pipeline of Eye/Head Tracking Data Using Tobii Pro Glasses 3},
@@ -44,6 +45,7 @@ Please let us know if there are any issues with the installations. For further i
 	eprint = {https://www.biorxiv.org/content/early/2022/09/05/2022.09.02.506255.full.pdf},
 	journal = {bioRxiv}
 }
+```
 
 ## License
 Copyright 2022 SUNYOpt
