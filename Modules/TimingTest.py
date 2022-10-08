@@ -1,3 +1,7 @@
+# Timing Test Module 
+# Modular Streaming Pipeline of Eye/Head Tracking Data Using Tobii Pro Glasses 3
+# Hamed Rahimi Nasrabadi, Jose-Manuel Alonso
+# bioRxiv 2022.09.02.506255; doi: https://doi.org/10.1101/2022.09.02.506255
 
 from PyQt5.QtWidgets import QMainWindow, QListWidget
 from PyQt5.QtWidgets import QApplication
@@ -6,21 +10,12 @@ from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QPushButton
-
 from PyQt5 import QtCore
-
-
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
 import numpy
-
 import socket
 import sys
 
-
-global ModuleDir
-ModuleDir = "Modules/"
-
-print('yo')
 
 
 #########################

@@ -115,12 +115,6 @@ class GeoEyeTracker(QMainWindow):
            cv2.imshow('Orig',outImg)
            cv2.imshow('Counto',self.countImg)
 
-           #self.result.write(outImg)
-
-       #if self.EyeFrame >= 1600:
-       #    print('SaveBitch')
-       #   self.result.release()
-       #    self.Showfinished.emit()
 
    def CalibrateEyePos(self):
        print('Claculating '+str(self.numCalTars) +'th position')

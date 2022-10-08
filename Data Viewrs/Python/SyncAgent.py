@@ -51,9 +51,7 @@ class SyncAgent(QMainWindow):
        self.sceneTSS.emit(ttssceneArray)
        self.eyeTSS.emit(ttseyeArray)
 
-       #print(self.BDFile[0])
-       #mat = scipy.io.loadmat(self.BDFile[0])
-       #print(mat)
+
 
        # Find corresponding timestamps of the Videos and check later their frame number
        for sceneMTS in sceneMSTSArray:

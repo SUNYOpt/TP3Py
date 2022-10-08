@@ -67,7 +67,6 @@ class Plane_projector:
        if self.Calibmode == True:
            # calibration frame index
            f = int(self.currFrame - self.CalibStratFrame)
-           #self.DisPointArray.append(DisPoint[self.currPos-1,:])
            self.DisPointArray.append(DisPoint)
            # When the certain frames passed
            if self.currFrame >=  self.CalibStratFrame+self.Calibnumframes:
@@ -180,8 +179,5 @@ class Plane_projector:
        targetSize = EyeGeo.h/np.sin(alpha)
 
        self.ScaleMat = [[targetSize/TScal, 0],[0, EyeGeo.h/TScal]]
-       #self.ScaleMat = [[TScal/EyeGeo.w, 0],[0, TScal/EyeGeo.h]]
- 
-       #print('ScaleM:', self.ScaleMat)
 
        return np.matmul(self.ScaleMat, self.RotMat)

@@ -4,23 +4,20 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QGridLayout
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QWidget
-from PyQt5 import QtCore
+# ShowScene Module
+# Modular Streaming Pipeline of Eye/Head Tracking Data Using Tobii Pro Glasses 3
+# Hamed Rahimi Nasrabadi, Jose-Manuel Alonso
+# bioRxiv 2022.09.02.506255; doi: https://doi.org/10.1101/2022.09.02.506255
 
+from PyQt5 import QtCore
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
 import numpy
 import cv2
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
 from PyQt5.QtGui import QPixmap
-
-
-global ModuleDir
-ModuleDir = "Modules/"
-
-print('yo')
 
 
 

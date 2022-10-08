@@ -1,24 +1,21 @@
+# IMU Plot Module 
+# Modular Streaming Pipeline of Eye/Head Tracking Data Using Tobii Pro Glasses 3
+# Hamed Rahimi Nasrabadi, Jose-Manuel Alonso
+# bioRxiv 2022.09.02.506255; doi: https://doi.org/10.1101/2022.09.02.506255
+
 from PyQt5.QtWidgets import QMainWindow, QListWidget
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QGridLayout
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QWidget
 from PyQt5 import QtCore
-
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-
 import random
 import json
 from collections import namedtuple
 import numpy as np
-
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
-
-global ModuleDir
-ModuleDir = "Modules/"
-
-print('yo')
 
 #################################
 """ Class we need for plotting"""

@@ -5,13 +5,16 @@ Write the following in the terminal to start streaming.
 ```
 python3 TP3Py_main.py
 ```
+Connect to the glasses and enjoy full control on the data acquisition and live processing. 
 
 ## Ubuntu Installation
-Installing Gstreamer, Opencv, and pyqt5: 
+Installing Gstreamer, Opencv, and pyqt5 (tested on Ubuntu 20.04 and 21.04 with python 3.8 and 3.9*).  
 ```
-sudo apt install libgstreamer1.0-0 gstreamer1.0-plugins-{base,good,bad,ugly} gstreamer1.0-tools python3-gi gir1.2-gstreamer-1.0  gstreamer1.0-libav python3-pip libopencv-dev python3-opencv python3-pyqt5 qtcreator pyqt5-dev-tools qttools5-dev-tools qt5-default qt5ct
+sudo apt install libgstreamer1.0-0 gstreamer1.0-plugins-{base,good,bad,ugly} gstreamer1.0-tools python3-gi gir1.2-gstreamer-1.0  gstreamer1.0-libav python3-pip  
 
-python3 -m pip install --user numpy scipy matplotlib ipython jupyter pandas sympy nose
+sudo apt-get install libopencv-dev python3-opencv python3-pyqt5 qtcreator pyqt5-dev-tools qttools5-dev-tools qt5-default qt5ct
+
+python3 -m pip install --user numpy scipy matplotlib==3.4 ipython pandas sympy nose asyncio  websocket-client pynput 
 ```
 ## Windows Installation 
 We will have to build an environemt where gstreamer libraries can be installed properly. For this reason install [MySys2](https://www.msys2.org/) application and open the mingw 64bit terminal. 
@@ -29,7 +32,7 @@ pacman -Sy mingw-w64-x86_64-python3-pip mingw-w64-x86_64-python3-numpy mingw-w64
 pacman -S mingw-w64-x86_64-python-matplotlib
 pacman -S mingw-w64-x86_64-gst-rtsp-server
 ```
-
+* Ubuntu 22.04 with python 3.10 did not work. 
 ## Contact and information 
 Please let us know if there are any issues with the installations. For further information please refer to the paper.
 

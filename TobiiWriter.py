@@ -47,10 +47,10 @@ class TobiiWriter(QObject):
         self.startWriters = True
         print('Name Set', self.startWriters)
 
-    def PauseWriters(self):
+    def pauseWriters(self):
         self.startWriters = False
 
-    def UnPauseWriters(self):
+    def unPauseWriters(self):
         self.startWriters = True
 
     def internal_writer(self):

@@ -37,8 +37,7 @@ class SceneToHeadCoords(QMainWindow):
        self.DisplayW = 45
        self.Cameraf= 500
        self.GlobalDisplayCoords = np.array([[self.DisplayL/2, -self.DisplayW/2, 0], [-self.DisplayL/2, -self.DisplayW/2, 0], [-self.DisplayL/2, self.DisplayW/2, 0], [self.DisplayL/2, self.DisplayW/2, 0]], np.float32)
-       #CameraIntrinM = np.array([[Cameraf, 0, 0],[0, Cameraf, 0],[0, 0, 1]], np.float32)
-       #DistortionCoeffs = np.zeros((1,4))
+
        self.axis = np.float32([[0,0,0], [30,0,0], [0,30,0], [0,0,-30]]).reshape(-1,3)
         
        self.SmoothDispPos = np.float32([[0,0], [0,0], [0,0], [0,0]])
@@ -52,10 +51,6 @@ class SceneToHeadCoords(QMainWindow):
        self.GazePosLeft = np.float32([1, 1])
 
 
-       #self.result = cv2.VideoWriter('Scene2.avi',
-       #                  cv2.VideoWriter_fourcc(*'XVID'),
-       #                  12, (960, 540), isColor= False)
-
        self.filewriter = open('ETdata-' + ".txt", 'w')
 
        self.EyeTrackEnabled = False
@@ -68,8 +63,7 @@ class SceneToHeadCoords(QMainWindow):
    def showFrame(self):
        
        framnum = self.EyePts//30
-       #self.cap.set(cv2.CAP_PROP_POS_MSEC, self.EyePts)
-       #self.cap.set(cv2.CAP_PROP_POS_FRAMES, framnum)
+
 
        if self.SyncEnabled:
            Scenepts = self.sceneTSArray[self.SceneFrameCount]
@@ -96,8 +90,7 @@ class SceneToHeadCoords(QMainWindow):
                self.Showfinished.emit()
                return
 
-       #print(frame.shape)
-       #print('Scene PTS:', Scenepts)
+
 
        resizdFrame = cv2.resize(frame, (960, 540))
 
@@ -118,7 +111,6 @@ class SceneToHeadCoords(QMainWindow):
 
            if (perimeter) < 200 or (perimeter) > 3000:
                continue
-           # contoursFrame = cv2.drawContours(contoursFrame, [cnt], 0, (255, 0, 255), 1)
 
            epsilon = 0.05 * perimeter
            approx = cv2.approxPolyDP(cnt, epsilon, True)
@@ -128,8 +120,6 @@ class SceneToHeadCoords(QMainWindow):
            if approx.shape[0] == 4 and areaPeriRatio > 10:
                # print(area/perimeter)
                contoursFrame = cv2.drawContours(contoursFrame, [approx], 0, (255, 0, 255), 1)
-               # for p in range(approx.shape[0]):
-               # gray = cv2.circle(gray, (approx[p,0,0],approx[p,0,1]), radius=10, color=(255, 0, 255), thickness=-1
                self.UpdateDispPos(approx)
 
                area = cv2.contourArea(cnt)
@@ -177,17 +167,12 @@ class SceneToHeadCoords(QMainWindow):
        if ret == True:
            cv2.imshow('Frame',gray)
 
-           #self.result.write(gray)
 
        if SceneFrame >= self.CurrMaxFrame: 
            if self.currentVideoInd < len(self.videos)-1:    
                self.NextVideo()
            else: 
                self.Showfinished.emit()
-       #if SceneFrame >= 800:
-       #    print('SaveBitch')
-       #    self.result.release()
-       #    self.Showfinished.emit()
 
    # Offile processing of scene images
    def ProcessSceneFrame4Pos(self):
@@ -209,8 +194,6 @@ class SceneToHeadCoords(QMainWindow):
                    self.Showfinished.emit()
                    return
 
-          # print(frame.shape)
-          # print('Scene PTS:', Scenepts)
 
            resizdFrame = cv2.resize(frame, (960, 540))
            gray = cv2.cvtColor(resizdFrame, cv2.COLOR_BGR2GRAY)
@@ -219,7 +202,6 @@ class SceneToHeadCoords(QMainWindow):
            newcameramtx, roi = cv2.getOptimalNewCameraMatrix(self.mtx, self.dist, (w, h), 1, (w, h))
            gray = cv2.undistort(gray, self.mtx, self.dist, None, newcameramtx)
 
-            #gray= cv2.GaussianBlur(gray, (25,25), 0)
            edges = cv2.Canny(gray, 100, 200, 3, L2gradient=True)
 
            cnts, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -322,7 +304,6 @@ class SceneToHeadCoords(QMainWindow):
        alpha = 360/2160
 
        self.SmoothDispPos = self.SmoothDispPos*(1-self.MovingDispContrib)  + sorted_Poses*self.MovingDispContrib
-       #self.SmoothDispPos = self.SmoothDispPos * (1 - self.MovingDispContrib) + edgePoints * self.MovingDispContrib
 
 
    def UpdateTarPos(self, approx):
@@ -379,14 +360,9 @@ class SceneToHeadCoords(QMainWindow):
 
    @pyqtSlot(np.ndarray)   
    def UpdateGazePositionRight (self, Gaze2D):
-       #print('Gaz2DDe', Gaze2D)
        self.GazePosRight = Gaze2D.astype(int)
-       #self.GazePos = [self.GazePos[0,0], self.GazePos[1,0]]
-       #print('Gazzee', [self.GazePos[0,0], self.GazePos[1,0]])
+
 
    @pyqtSlot(np.ndarray)   
    def UpdateGazePositionLeft (self, Gaze2D):
-       #print('Gaz2DDe', Gaze2D)
        self.GazePosLeft = Gaze2D.astype(int)
-       #self.GazePos = [self.GazePos[0,0], self.GazePos[1,0]]
-       #print('Gazzee', [self.GazePos[0,0], self.GazePos[1,0]])

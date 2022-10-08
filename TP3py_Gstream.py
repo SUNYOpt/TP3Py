@@ -9,10 +9,8 @@ gi.require_version("Gst", "1.0")
 gi.require_version("GstApp", "1.0")
 import json
 from collections import namedtuple
-import matplotlib.animation as animation
 import sys
 import os
-import cv2
 import numpy
 from datetime  import datetime
 from gi.repository import GstApp, GLib, GObject, Gst
@@ -20,9 +18,6 @@ from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
 from TobiiWriter import TobiiWriter
 import time
 import requests
-from requests.auth import HTTPBasicAuth
-import websocket
-import asyncio 
 Gst.init(None)
 
 
@@ -98,12 +93,14 @@ class TP3py_Gstream(QObject):
         self.TobiiGazeWriteThread.TobiiGazeWriteWorker = TobiiGazeWriteWorker
         self.TobiiTSWriteThread.TobiiTSWriteWorker = TobiiTSWriteWorker
 
-
-                                            
+        ################ Guidelines for chaning the Gstreamer's pipeline specifications ####################
+        # Change the video buffer size by changing the width and height variables in video decoder branches
+        # If gaze marker is needed to be overlaid on scene video set gaze-overlay=true          
+        # Change the length of the saving videos by changing   max-size-time=60000000000 (micro seconds)            
         self.pipeline = Gst.parse_launch('rtspsrc location=rtsp://192.168.75.51:8554/live/all?gaze-overlay=false \
         latency=100 name=src protocols=GST_RTSP_LOWER_TRANS_TCP enable-meta=true do-timestamp=true buffer-mode = 0 drop-on-latency=true \
         src. ! application/x-rtp,payload=96 ! rtpjitterbuffer max-misorder-time = 0  ! rtph264depay ! h264parse  ! tee name=tscene \
-        tscene. ! queue ! avdec_h264 ! appsink name=Appscenesink \
+        tscene. ! queue ! avdec_h264 ! videoscale ! video/x-raw,width=1920, height=1080! appsink name=Appscenesink \
         tscene. ! queue ! splitmuxsink  max-size-time=60000000000  name=scenesink \
         src. ! application/x-rtp,payload=98 ! rtpjitterbuffer max-misorder-time = 0  ! rtph264depay ! h264parse  ! tee name=teye \
         teye. ! queue ! avdec_h264 ! videoscale ! video/x-raw,width=512, height=128! appsink name=Appeyesink \

@@ -6,33 +6,20 @@
 # importing the module
 import json
 from collections import namedtuple
-import matplotlib.animation as animation
 import sys
 import os
-import cv2
 import numpy
-
 import glob
 import importlib
 import importlib.util
-
-import matplotlib
-matplotlib.use('Qt5Agg')
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
 import random
 from PyQt5 import QtCore
-from queue import Queue
-
-
 import struct
 import math 
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
 from PyQt5.QtGui import QPixmap
-
 from PyQt5 import QtWidgets
-
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QGridLayout
 from PyQt5.QtWidgets import QLabel
@@ -42,15 +29,11 @@ from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow, QListWidget, QCheckBox
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot, Qt
-from functools import partial
 from datetime import datetime
 from TP3py_Gstream import TP3py_Gstream
 from pathlib import Path
 from pynput import keyboard
 import websocket
-
-# root = "./"
-# ModuleDir = './Modules/'
 
 
 # A Handler for importing modules into the TP3Py's pipeline
@@ -90,7 +73,7 @@ class ModuleHandler():
             self.OpenMods.append(cls(gstreamWorker))
             
             
-   def rem_modules_by_index(self, i)
+   def rem_modules_by_index(self, i):
        del self.ModArray[i]
 
    def close_all(self):
