@@ -1,10 +1,14 @@
+% TP3Py's dataviewer in Matlab
+% 
+% Hamed Rahimi Nasrabadi, Jose-Manuel Alonso
+% doi: https://doi.org/10.1101/2022.09.02.506255
+
 clear all
 close all
 %% Subject name and the directory of the data meant for processing
 % Inputs
 Sub = '202208091801';
 filedir = ['C:\Users\hrahi\Desktop\TP3Py\hrn\', Sub,'\']; % the folder that contrains the data 
-addpath('quaternion_library');      % include quaternion library
 
 
 % Parameters
@@ -225,10 +229,10 @@ box off
 %% heading
 subplot(6,2,[9 10])
 
-[ttime, euler] = getHeading_GUO(FIMU)
-h1= plot(ttime, euler(:, 1)-90, 'r'); hold on;
-h2 = plot(ttime, euler(:, 2), 'g');
-h3 = plot(ttime, euler(:, 3), 'b');
+%[ttime, euler] = getHeading(FIMU)   
+%h1= plot(ttime, euler(:, 1)-90, 'r'); hold on;
+%h2 = plot(ttime, euler(:, 2), 'g');
+%h3 = plot(ttime, euler(:, 3), 'b');
 
 xlim([tTTL(1) tTTL(2)+2])
 
